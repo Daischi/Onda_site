@@ -4,6 +4,12 @@ Aplicação Next.js App Router + TypeScript + Tailwind, PostgreSQL/Prisma, Bette
 
 **Não está conectada às contas do vendedor.** Nenhuma cobrança real foi realizada. Sem `DATABASE_URL`, a vitrine mostra quatro exemplos visuais identificados e bloqueia a compra; eles não são inseridos no banco. Um banco configurado e vazio mostra o estado de catálogo vazio. Os testes automatizados usam banco isolado e respostas simuladas dos provedores.
 
+## Demonstração para apresentação
+
+A pasta `demo/` contém uma demonstração estática da vitrine e do painel, preparada para [GitHub Pages](https://daischi.github.io/Onda_site/). O workflow `demo-pages.yml` publica somente essa pasta. Ela permite explorar produtos, carrinho e configurações com dados fictícios; o checkout é simulado, não há autenticação real, cobrança, conexão ao Drive ou envio de e-mail. Alterações feitas no painel de demonstração não alteram o banco da loja.
+
+A demonstração serve para apresentar o visual e o fluxo ao cliente. A aplicação completa continua precisando do servidor, banco e worker descritos em [DEPLOY-RENDER.md](DEPLOY-RENDER.md). O painel de demonstração abre por `admin.html`; em produção, o acesso administrativo permanece protegido em `/admin`.
+
 ## Executar localmente
 
 Requisitos: Node.js 22.18+ LTS, npm e Docker com Compose (ou PostgreSQL 17+ existente).
