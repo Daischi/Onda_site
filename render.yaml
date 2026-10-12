@@ -1,0 +1,99 @@
+# Preparação revisável: aplicar este Blueprint cria recursos PAGOS no Render.
+# O repositório deve conter package.json e Dockerfile na raiz.
+# Não inclui contas, banco local, credenciais de provedores ou vendas reais.
+# yaml-language-server: $schema=https://render.com/schema/render.yaml.json
+
+previews:
+  generation: "off"
+
+envVarGroups:
+  - name: onda-production-secrets
+    envVars:
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: ONDA_LOCAL_PREVIEW
+        value: "false"
+      - key: ALLOW_LIVE_PAYMENTS
+        value: "false"
+      # Edite para os domínios exatos das capas e prévias, separados por vírgula.
+      - key: MEDIA_HOSTS
+        value: ""
+
+services:
+  - type: web
+    name: onda-web
+    runtime: docker
+    region: virginia
+    plan: 0.5c-512mb
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: node node_modules/next/dist/bin/next start --hostname 0.0.0.0 --port 10000
+    preDeployCommand: npm run db:migrate
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 120
+    autoDeployTrigger: "off"
+    envVars:
+      - fromGroup: onda-production-secrets
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: onda-postgres
+          property: connectionString
+      # Funciona antes de existir domínio próprio; use somente esta origem.
+      - key: APP_URL
+        fromService:
+          name: onda-web
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: BETTER_AUTH_URL
+        fromService:
+          name: onda-web
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  - type: worker
+    name: onda-worker
+    runtime: docker
+    region: virginia
+    plan: 0.5c-512mb
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Node recebe SIGTERM diretamente e conclui a tarefa antes de encerrar.
+    dockerCommand: node --import tsx scripts/worker.ts
+    maxShutdownDelaySeconds: 120
+    autoDeployTrigger: "off"
+    envVars:
+      - fromGroup: onda-production-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: onda-postgres
+          property: connectionString
+      - key: APP_URL
+        fromService:
+          name: onda-web
+          type: web
+          envVarKey: APP_URL
+      - key: BETTER_AUTH_URL
+        fromService:
+          name: onda-web
+          type: web
+          envVarKey: BETTER_AUTH_URL
+
+databases:
+  - name: onda-postgres
+    databaseName: onda
+    user: onda
+    region: virginia
+    plan: 0.1c-256mb
+    diskSizeGB: 5
+    postgresMajorVersion: "17"
+    connectionPool: none
+    # Acesso TCP somente pela rede interna do Render.
+    ipAllowList: []

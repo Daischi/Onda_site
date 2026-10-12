@@ -1,0 +1,1 @@
+export default function NotFound(){return <main className="shell empty"><h1>Esse som não está aqui.</h1><p>A página pode ter mudado de endereço.</p><a className="button" href="/catalogo">Explorar catálogo</a></main>;}

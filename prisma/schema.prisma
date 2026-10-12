@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id
+  name String
+  email String @unique
+  username String? @unique
+  emailVerified Boolean @default(false)
+  image String?
+  role String @default("user")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  sessions Session[]
+  accounts Account[]
+  @@map("user")
+}
+model Session {
+  id String @id
+  expiresAt DateTime @db.Timestamptz(3)
+  token String @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  ipAddress String?
+  userAgent String?
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("session")
+}
+model Account {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+  scope String?
+  password String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@map("account")
+}
+model Verification {
+  id String @id
+  identifier String
+  value String
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  @@map("verification")
+}
+model RateLimit {
+  id String @id @default(cuid())
+  key String @unique
+  count Int
+  lastRequest BigInt
+  @@map("rateLimit")
+}
+model Category {
+  id String @id @default(cuid())
+  name String @unique
+  position Int @default(0)
+  products Product[]
+}
+model Product {
+  id String @id @default(cuid())
+  name String
+  description String
+  price Int
+  cover String @default("")
+  preview String @default("")
+  type String
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  featured Boolean @default(false)
+  status String @default("draft")
+  driveId String
+  validatedAt DateTime? @db.Timestamptz(3)
+  formats String
+  contents String
+  license String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+model Settings {
+  id String @id @default("store")
+  name String @default("ONDA")
+  description String @default("Encontre o som da sua próxima ideia.")
+  support String @default("")
+  logo String @default("")
+  banner String @default("")
+  terms String @default("")
+  privacy String @default("")
+  usage String @default("")
+  senderName String @default("ONDA")
+  senderEmail String @default("")
+  signature String @default("Equipe ONDA")
+}
+model Integration {
+  id String @id
+  encrypted String
+  status String @default("saved")
+  checkedAt DateTime? @db.Timestamptz(3)
+  message String @default("")
+}
+model Order {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  checkoutKey String @unique
+  email String
+  name String
+  payerDocumentEncrypted String?
+  total Int
+  paymentStatus String @default("pending")
+  deliveryStatus String @default("pending")
+  paymentId String? @unique
+  collectorId String
+  liveMode Boolean
+  paymentUpdatedAt DateTime? @db.Timestamptz(3)
+  pix String?
+  qr String?
+  expiresAt DateTime? @db.Timestamptz(3)
+  confirmationEmailId String?
+  deliveryEmailId String?
+  emailVersion Int @default(0)
+  emailCorrectionPending Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  items OrderItem[]
+  jobs Job[]
+  attempts Attempt[]
+  @@index([paymentStatus, createdAt])
+}
+model OrderItem {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  productId String
+  name String
+  price Int
+  driveId String
+  type String
+  license String
+  contents String
+  permissionId String?
+  deliveredTo String?
+  deliveredAt DateTime? @db.Timestamptz(3)
+  @@index([driveId, deliveredTo])
+}
+model Grant {
+  id String @id @default(cuid())
+  driveId String
+  email String
+  permissionId String
+  owned Boolean
+  @@unique([driveId, email])
+}
+model Job {
+  id String @id @default(cuid())
+  key String @unique
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  kind String
+  status String @default("pending")
+  attempts Int @default(0)
+  runAt DateTime @default(now()) @db.Timestamptz(3)
+  payload Json?
+  @@index([status, runAt])
+}
+model Attempt {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  kind String
+  success Boolean
+  message String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model Audit {
+  id String @id @default(cuid())
+  actorId String
+  action String
+  targetId String
+  detail String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model Throttle {
+  key String @id
+  count Int @default(1)
+  expiresAt DateTime @db.Timestamptz(3)
+}
+model Heartbeat {
+  id String @id
+  at DateTime @default(now()) @db.Timestamptz(3)
+}

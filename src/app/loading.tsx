@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="shell loading" aria-busy="true"><span className="eyebrow">ONDA / CARREGANDO</span><div className="skeleton"/><div className="skeleton"/></main>;}
