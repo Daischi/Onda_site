@@ -6,7 +6,11 @@ Aplicação Next.js App Router + TypeScript + Tailwind, PostgreSQL/Prisma, Bette
 
 ## Demonstração para apresentação
 
-A pasta `demo/` contém uma demonstração estática da vitrine e do painel, preparada para [GitHub Pages](https://daischi.github.io/Onda_site/). O workflow `demo-pages.yml` publica somente essa pasta. Ela permite explorar produtos, carrinho e configurações com dados fictícios; o checkout é simulado, não há autenticação real, cobrança, conexão ao Drive ou envio de e-mail. Alterações feitas no painel de demonstração não alteram o banco da loja.
+A pasta `demo/` contém uma demonstração da vitrine e do painel publicada no [GitHub Pages](https://daischi.github.io/Onda_site/). O workflow `demo-pages.yml` publica somente essa pasta. Há busca, filtros, detalhes e licenças, prévias de áudio, carrinho, checkout com dados fictícios, pedidos persistentes, histórico, expiração/cancelamento/nova tentativa, aprovação simulada, downloads WAV/ZIP de exemplo, recibo e prévia do e-mail de entrega. A compra permanece no fluxo do comprador, sem direcioná-lo ao painel.
+
+O painel permite cadastrar, editar, publicar, arquivar e excluir produtos, organizar categorias, personalizar a vitrine e os textos e acompanhar os pedidos simulados. Essas alterações, o carrinho e os pedidos ficam no armazenamento local do mesmo navegador; cada visitante possui sua própria demonstração. Recarregar a página preserva os dados. O botão de reiniciar no painel restaura o catálogo e apaga somente a demonstração daquele navegador.
+
+Não há autenticação administrativa real, cobrança bancária, conexão ao Drive ou envio de e-mail. Alterações da demonstração não alteram o banco da aplicação completa. Os áudios são exemplos instrumentais sintéticos criados para testar o player e a entrega; não são músicas do vendedor. Veja [demo/assets/README.md](demo/assets/README.md).
 
 A demonstração serve para apresentar o visual e o fluxo ao cliente. A aplicação completa continua precisando do servidor, banco e worker descritos em [DEPLOY-RENDER.md](DEPLOY-RENDER.md). O painel de demonstração abre por `admin.html`; em produção, o acesso administrativo permanece protegido em `/admin`.
 
